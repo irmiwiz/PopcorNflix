@@ -5,8 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CastApi(
-    @SerialName("profile_path")
-    var profilePath: String? = null,
-    @SerialName("name")
+    var profile_path: String? = null,
     var name: String? = null
 )

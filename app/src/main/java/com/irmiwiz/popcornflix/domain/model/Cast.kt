@@ -10,6 +10,6 @@ data class Cast(
 
 fun CastResponseApi.toCastList(): List<Cast> {
     return cast?.map {
-        Cast(profilePath = it.profilePath ?: EMPTY_STRING, name = it.name ?: EMPTY_STRING)
+        Cast(profilePath = it.profile_path ?: EMPTY_STRING, name = it.name ?: EMPTY_STRING)
     } ?: emptyList()
 }
