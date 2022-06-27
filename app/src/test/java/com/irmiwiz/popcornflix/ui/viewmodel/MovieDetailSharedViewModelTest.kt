@@ -17,7 +17,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class MovieDetailSharedViewModelTest{
+class MovieDetailSharedViewModelTest {
     @MockK
     private lateinit var movieRepository: MovieRepository
 
@@ -39,16 +39,18 @@ class MovieDetailSharedViewModelTest{
     }
 
     @Test
-    fun `when repository on getMovieDetail is success then DetailActivityUiState is showMovieDetail`() = runTest {
-        coEvery { movieRepository.getMovieDetails(1) } returns MovieResult.Success(getMovie())
-        viewModel.getMovieDetail(1)
-        assert(viewModel.viewState.value is DetailActivityUiState.ShowMovieDetail)
-    }
+    fun `when repository on getMovieDetail is success then DetailActivityUiState is showMovieDetail`() =
+        runTest {
+            coEvery { movieRepository.getMovieDetails(1) } returns MovieResult.Success(getMovie())
+            viewModel.getMovieDetail(1)
+            assert(viewModel.viewState.value is DetailActivityUiState.ShowMovieDetail)
+        }
 
     @Test
-    fun `when repository on getMovieDetail fails then DetailActivityUiState is ShowErrorMessage`() = runTest {
-        coEvery { movieRepository.getMovieDetails(1) } returns MovieResult.Error("")
-        viewModel.getMovieDetail(1)
-        assert(viewModel.viewState.value is DetailActivityUiState.ShowErrorMessage)
-    }
+    fun `when repository on getMovieDetail fails then DetailActivityUiState is ShowErrorMessage`() =
+        runTest {
+            coEvery { movieRepository.getMovieDetails(1) } returns MovieResult.Error("")
+            viewModel.getMovieDetail(1)
+            assert(viewModel.viewState.value is DetailActivityUiState.ShowErrorMessage)
+        }
 }
