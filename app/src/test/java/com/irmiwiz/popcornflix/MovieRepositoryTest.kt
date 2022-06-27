@@ -1,7 +1,6 @@
 package com.irmiwiz.popcornflix
 
 import com.irmiwiz.popcornflix.data.network.MovieClient
-import com.irmiwiz.popcornflix.domain.model.Movie
 import com.irmiwiz.popcornflix.domain.model.MovieResult
 import com.irmiwiz.popcornflix.domain.repository.MovieRepository
 import io.mockk.MockKAnnotations
@@ -12,7 +11,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 
-class MovieRepositoryTest  {
+class MovieRepositoryTest {
 
     @MockK
     private lateinit var moviesClient: MovieClient
@@ -75,7 +74,9 @@ class MovieRepositoryTest  {
     fun `when getListOfMovies is success then get a MovieResult success`() =
         runBlocking {
             //given
-            coEvery { moviesClient.getListOfMovies("", 1) } returns MovieResult.Success(getMovieResponse())
+            coEvery { moviesClient.getListOfMovies("", 1) } returns MovieResult.Success(
+                getMovieResponse()
+            )
 
             //when
             val resutl = movieRepository.getListOfMovies("", 1)
@@ -129,7 +130,12 @@ class MovieRepositoryTest  {
     fun `when getCast is success then get a MovieResult success`() =
         runBlocking {
             //given
-            coEvery { moviesClient.getCast(1) } returns MovieResult.Success(listOf(getCast(), getCast()))
+            coEvery { moviesClient.getCast(1) } returns MovieResult.Success(
+                listOf(
+                    getCast(),
+                    getCast()
+                )
+            )
 
             //when
             val resutl = movieRepository.getCast(1)
