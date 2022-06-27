@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class MovieRepositoryImpl @Inject internal constructor(
+class MovieRepository @Inject internal constructor(
     private val clientImpl: MovieClient
 ) {
     suspend fun getMovieDetails(movieId: Int): MovieResult<Movie> {
