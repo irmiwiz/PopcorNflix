@@ -14,9 +14,9 @@ data class MoviesResponse(
 fun MoviesResponseApi.toMoviesResponse(): MoviesResponse {
     return MoviesResponse(
         page = page ?: EMPTY_INT,
-        movies = movies.mapToMovies(),
-        totalResults = totalResults ?: EMPTY_INT,
-        totalPages = totalPages ?: EMPTY_INT
+        movies = results.mapToMovies(),
+        totalResults = total_results ?: EMPTY_INT,
+        totalPages = total_pages ?: EMPTY_INT
     )
 }
 

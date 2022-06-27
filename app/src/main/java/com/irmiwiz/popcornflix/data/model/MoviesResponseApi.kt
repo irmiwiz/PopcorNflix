@@ -5,15 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MoviesResponseApi (
-    @SerialName("page")
     var page : Int? = null,
-
-    @SerialName("results")
-    var movies: List<MovieApi>? = null,
-
-    @SerialName("total_results")
-    var totalResults : Int? = null,
-
-    @SerialName("total_pages")
-    var totalPages : Int? = null,
+    var results: List<MovieApi>? = null,
+    var total_results : Int? = null,
+    var total_pages : Int? = null,
 )

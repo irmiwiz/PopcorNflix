@@ -41,9 +41,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setUpToolbar()
         setUpBottomToolbar()
+        viewModel.uiState.observe(this@MainActivity, ::observeUiState)
         viewModel.getMovies()
-        addObservers()
-        showProgressBar()
         setUpRecyclerView()
     }
 
@@ -58,24 +57,13 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerMovies.adapter = adapter
     }
 
-    private fun addObservers() {
-        viewModel.apply {
-            /* error.observe(this@MainActivity, { handleErrorResponse() })
-             movies.observe(this@MainActivity, ::refreshScreen)
-             search.observe(this@MainActivity, ::refreshSearch)
-
-             */
-            uiState.observe(this@MainActivity, ::observeUiState)
-        }
-    }
-
     private fun observeUiState(uiState: MainActivityUiState) {
         binding.progressBar.toggleVisibility(uiState is MainActivityUiState.Loading)
         showErrorView(uiState is MainActivityUiState.Error)
         when (uiState) {
             is MainActivityUiState.ShowMovies -> adapter.submitList(uiState.movieList)
-            is MainActivityUiState.updateMovies -> updateMovies(uiState.movieList)
-            is MainActivityUiState.showSearchList -> adapter.submitList(uiState.movieList)
+            is MainActivityUiState.UpdateMovies -> adapter.updateList(uiState.movieList)
+            is MainActivityUiState.ShowSearchList -> adapter.submitList(uiState.movieList)
         }
     }
 
@@ -84,12 +72,6 @@ class MainActivity : AppCompatActivity() {
             txtError.toggleVisibility(show)
             recyclerMovies.toggleVisibility(show.not())
         }
-    }
-
-    private fun updateMovies(newListMovies: List<Movie>) {
-        val listUpdated = adapter.currentList
-        listUpdated.addAll(listUpdated.size.dec(), newListMovies)
-        adapter.submitList(listUpdated)
     }
 
     private fun setUpBottomToolbar() {
@@ -151,7 +133,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateMenu(item: MenuItem) {
-        showProgressBar()
         when (item.itemId) {
             R.id.most_pupular -> {
                 viewModel.getMovies(QueryType.MOST_POPULAR.value)
@@ -165,51 +146,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleErrorResponse() {
-        hideProgressBar()
-        binding.apply {
-            txtError.visibility = View.VISIBLE
-            recyclerMovies.visibility = View.GONE
-        }
-    }
-
-    private fun hideErrorMsg() {
-        hideProgressBar()
-        binding.apply {
-            txtError.visibility = View.GONE
-            recyclerMovies.visibility = View.VISIBLE
-        }
-    }
-
-    /*
-    private fun refreshSearch(movies: List<Movie>) {
-        refreshScreen(movies)
-    }
-
-     */
-
-    /*
-    private fun refreshScreen(movies: List<Movie>) {
-        hideErrorMsg()
-        adapter.onMoviesUpdated(movies)
-    }
-
-     */
-
     override fun onBackPressed() {
         if (binding.toolbar.searchGroup.isVisible) {
             closeSearchView()
         } else {
             super.onBackPressed()
         }
-    }
-
-    private fun showProgressBar() {
-        binding.progressBar.toggleVisibility(true)
-    }
-
-    private fun hideProgressBar() {
-        binding.progressBar.toggleVisibility(false)
     }
 
     private fun goToDetailActivity(movieId: Int) {
