@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">PopcorNflix</string>
+<string name="app_name">PopcorNflix</string>
+<string name="error_getting_movies">An error occurred while getting the movies</string>
+<string name="error_getting_detail">An error occurred while getting the details. Try again</string>
+<string name="insert_keyword">Insert a keyword</string>
+<string name="most_popular">Most popular</string>
+<string name="most_recent">Most recent</string>
+<string name="best_rated">Best rated</string>
 </resources>
