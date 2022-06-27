@@ -15,18 +15,25 @@ import com.irmiwiz.popcornflix.R
 import com.irmiwiz.popcornflix.core.helper.*
 import com.irmiwiz.popcornflix.databinding.ActivityMainBinding
 import com.irmiwiz.popcornflix.domain.model.Movie
+import com.irmiwiz.popcornflix.ui.viewmodel.MainActivityUiState
 import com.irmiwiz.popcornflix.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() , MoviesAdapter.OnItemClickListener {
+class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainActivityViewModel by viewModels()
     lateinit var binding: ActivityMainBinding
-    private var queryType = QueryType.MOST_POPULAR.value
-    private var isBusy = false
-    private var page = 1
-    private val adapter = MoviesAdapter(this)
+
+    private val onMovieClicked: (movie: Movie) -> Unit = {
+        goToDetailActivity(it.id)
+    }
+
+    private val getMoreMovies: (movide: Movie) -> Unit = {
+        viewModel.getMoreMovies()
+    }
+
+    private val adapter = MoviesAdapter(onMovieClicked = onMovieClicked, getMoreData = getMoreMovies)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -34,7 +41,7 @@ class MainActivity : AppCompatActivity() , MoviesAdapter.OnItemClickListener {
         super.onCreate(savedInstanceState)
         setUpToolbar()
         setUpBottomToolbar()
-        getMovies()
+        viewModel.getMovies()
         addObservers()
         showProgressBar()
         setUpRecyclerView()
@@ -53,10 +60,36 @@ class MainActivity : AppCompatActivity() , MoviesAdapter.OnItemClickListener {
 
     private fun addObservers() {
         viewModel.apply {
-            error.observe(this@MainActivity,  { handleErrorResponse() })
-            movies.observe(this@MainActivity, ::refreshScreen)
-            search.observe(this@MainActivity, ::refreshSearch)
+            /* error.observe(this@MainActivity, { handleErrorResponse() })
+             movies.observe(this@MainActivity, ::refreshScreen)
+             search.observe(this@MainActivity, ::refreshSearch)
+
+             */
+            uiState.observe(this@MainActivity, ::observeUiState)
         }
+    }
+
+    private fun observeUiState(uiState: MainActivityUiState) {
+        binding.progressBar.toggleVisibility(uiState is MainActivityUiState.Loading)
+        showErrorView(uiState is MainActivityUiState.Error)
+        when (uiState) {
+            is MainActivityUiState.ShowMovies -> adapter.submitList(uiState.movieList)
+            is MainActivityUiState.updateMovies -> updateMovies(uiState.movieList)
+            is MainActivityUiState.showSearchList -> adapter.submitList(uiState.movieList)
+        }
+    }
+
+    private fun showErrorView(show: Boolean) {
+        binding.apply {
+            txtError.toggleVisibility(show)
+            recyclerMovies.toggleVisibility(show.not())
+        }
+    }
+
+    private fun updateMovies(newListMovies: List<Movie>) {
+        val listUpdated = adapter.currentList
+        listUpdated.addAll(listUpdated.size.dec(), newListMovies)
+        adapter.submitList(listUpdated)
     }
 
     private fun setUpBottomToolbar() {
@@ -72,7 +105,7 @@ class MainActivity : AppCompatActivity() , MoviesAdapter.OnItemClickListener {
             btnSearch.setOnClickListener { showSearchView() }
             btnClear.setOnClickListener { clearSearchText() }
             txtSearch.setOnKeyListener { _, keyCode, _ ->
-                if (keyCode ==  KeyEvent.KEYCODE_ENTER){
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
                     binding.toolbar.btnClear.visibility = View.VISIBLE
                     viewModel.searchMovies(txtSearch.text.toString())
                     return@setOnKeyListener true
@@ -91,8 +124,7 @@ class MainActivity : AppCompatActivity() , MoviesAdapter.OnItemClickListener {
 
     private fun searchCleared() {
         binding.toolbar.btnClear.visibility = View.GONE
-        resetValues()
-        viewModel.getMovies(queryType, page)
+        viewModel.getMovies()
     }
 
     private fun closeSearchView() {
@@ -119,34 +151,18 @@ class MainActivity : AppCompatActivity() , MoviesAdapter.OnItemClickListener {
     }
 
     private fun navigateMenu(item: MenuItem) {
-        if (!isBusy) {
-            showProgressBar()
-            when (item.itemId) {
-                R.id.most_pupular -> {
-                    queryType = QueryType.MOST_POPULAR.value
-                    resetValues()
-                }
-                R.id.most_recent -> {
-                    queryType = QueryType.MOST_RECENT.value
-                    resetValues()
-                }
-                else -> {
-                    queryType = QueryType.BEST_RATED.value
-                    resetValues()
-                }
+        showProgressBar()
+        when (item.itemId) {
+            R.id.most_pupular -> {
+                viewModel.getMovies(QueryType.MOST_POPULAR.value)
+            }
+            R.id.most_recent -> {
+                viewModel.getMovies(QueryType.MOST_RECENT.value)
+            }
+            else -> {
+                viewModel.getMovies(QueryType.BEST_RATED.value)
             }
         }
-    }
-
-    private fun resetValues() {
-        adapter.clear()
-        page = 1
-        getMovies()
-    }
-
-    private fun getMovies() {
-        viewModel.getMovies(queryType, page)
-        page.plus(1)
     }
 
     private fun handleErrorResponse() {
@@ -165,15 +181,20 @@ class MainActivity : AppCompatActivity() , MoviesAdapter.OnItemClickListener {
         }
     }
 
+    /*
     private fun refreshSearch(movies: List<Movie>) {
-        resetValues()
         refreshScreen(movies)
     }
 
+     */
+
+    /*
     private fun refreshScreen(movies: List<Movie>) {
         hideErrorMsg()
         adapter.onMoviesUpdated(movies)
     }
+
+     */
 
     override fun onBackPressed() {
         if (binding.toolbar.searchGroup.isVisible) {
@@ -184,21 +205,11 @@ class MainActivity : AppCompatActivity() , MoviesAdapter.OnItemClickListener {
     }
 
     private fun showProgressBar() {
-        isBusy = true
         binding.progressBar.toggleVisibility(true)
     }
 
     private fun hideProgressBar() {
-        isBusy = false
         binding.progressBar.toggleVisibility(false)
-    }
-
-    override fun onItemClick(movie: Movie) {
-        goToDetailActivity(movie.id)
-    }
-
-    override fun getMoreMovies() {
-        getMovies()
     }
 
     private fun goToDetailActivity(movieId: Int) {
